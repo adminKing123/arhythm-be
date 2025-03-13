@@ -24,6 +24,7 @@ class AccountConfigView(APIView):
         return Response({
             "user": userData,
             "SRC_URI": CONFIG["SRC_URI"],
+            "SHORT_VIDEO_URI": CONFIG["SHORT_VIDEO_URI"],
         }, status=status.HTTP_200_OK)
 
 class LoginWithUsernameAPIView(APIView):

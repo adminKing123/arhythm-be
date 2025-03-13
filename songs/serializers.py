@@ -28,7 +28,7 @@ class SongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Song
-        fields = ['id', 'title', 'url', 'original_name', 'lyrics', 'album', 'tags', 'artists', 'count', 'liked_count', 'duration']
+        fields = ['id', 'title', 'url', 'original_name', 'lyrics', 'album', 'tags', 'artists', 'count', 'liked_count', 'duration', 'short_video_url']
 
     # To add tags and artists, we need to get them through the related models
     def to_representation(self, instance):

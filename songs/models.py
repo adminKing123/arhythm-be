@@ -119,6 +119,7 @@ class Song(models.Model):
     count = models.PositiveBigIntegerField(default=0)
     liked_count = models.PositiveBigIntegerField(default=0)
     duration = models.FloatField(default=0, null=True, blank=True)
+    short_video_url = models.CharField(max_length=500, null=True, blank=True)
 
     class Meta:
         ordering = ['-id']
