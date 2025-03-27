@@ -277,6 +277,11 @@ class PlaylistViewSet(viewsets.ModelViewSet):
 
         if deleted_count == 0:
             return Response({"error": "No matching songs found in the playlist."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not playlist.playlist_songs.exists():
+            playlist.delete()
+            return Response({"message": "Songs removed successfully. Playlist deleted as it is now empty.", "playlistDeleted": True}, status=status.HTTP_200_OK)
+
 
         return Response({"message": "Songs removed successfully."}, status=status.HTTP_200_OK)
 
