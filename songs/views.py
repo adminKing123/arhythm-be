@@ -133,25 +133,6 @@ class SongViewSet(viewsets.ReadOnlyModelViewSet):
         
         return Response(response)
 
-    # @action(detail=True, methods=['get'])
-    # def related_songs(self, request, pk=None):
-    #     song = self.get_object()
-
-    #     related_songs = Song.objects.filter(album=song.album).exclude(id=song.id)
-
-    #     artist_ids = song.song_artists.values_list('artist_id', flat=True)
-    #     if artist_ids:
-    #         related_songs = related_songs | Song.objects.filter(song_artists__artist_id__in=artist_ids).exclude(id=song.id)
-
-    #     if (len(related_songs) < 25):
-    #         tag_ids = song.song_tags.values_list('tag_id', flat=True)
-    #         if tag_ids:
-    #             related_songs = related_songs | Song.objects.filter(song_tags__tag_id__in=tag_ids).exclude(id=song.id)
-
-    #     related_songs = related_songs.distinct().order_by('-count')[:24]
-
-    #     serializer = self.get_serializer(related_songs, many=True)
-    #     return Response(serializer.data)
     @action(detail=True, methods=['get'])
     def related_songs(self, request, pk=None):
         song = self.get_object()
@@ -410,9 +391,6 @@ class PlaylistSeekerViewSet(viewsets.ModelViewSet):
         }
 
         return Response(data, status=status.HTTP_200_OK)
-
-
-
 
 class HeroSlidesViewSet(APIView):
     def get(self, request):
