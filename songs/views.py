@@ -11,6 +11,7 @@ from .functions import get_slides
 from django.shortcuts import get_object_or_404
 from .paginators import CustomLimitOffsetPagination
 from django.db.models import Q, Exists, OuterRef
+from django.db.models.functions import Random
 from rest_framework.decorators import action
 from random import randint
 from config import CONFIG
@@ -132,23 +133,49 @@ class SongViewSet(viewsets.ReadOnlyModelViewSet):
         
         return Response(response)
 
+    # @action(detail=True, methods=['get'])
+    # def related_songs(self, request, pk=None):
+    #     song = self.get_object()
+
+    #     related_songs = Song.objects.filter(album=song.album).exclude(id=song.id)
+
+    #     artist_ids = song.song_artists.values_list('artist_id', flat=True)
+    #     if artist_ids:
+    #         related_songs = related_songs | Song.objects.filter(song_artists__artist_id__in=artist_ids).exclude(id=song.id)
+
+    #     if (len(related_songs) < 25):
+    #         tag_ids = song.song_tags.values_list('tag_id', flat=True)
+    #         if tag_ids:
+    #             related_songs = related_songs | Song.objects.filter(song_tags__tag_id__in=tag_ids).exclude(id=song.id)
+
+    #     related_songs = related_songs.distinct().order_by('-count')[:24]
+
+    #     serializer = self.get_serializer(related_songs, many=True)
+    #     return Response(serializer.data)
     @action(detail=True, methods=['get'])
     def related_songs(self, request, pk=None):
         song = self.get_object()
-
-        related_songs = Song.objects.filter(album=song.album).exclude(id=song.id)
-
-        artist_ids = song.song_artists.values_list('artist_id', flat=True)
-        if artist_ids:
-            related_songs = related_songs | Song.objects.filter(song_artists__artist_id__in=artist_ids).exclude(id=song.id)
-
-        if (len(related_songs) < 25):
-            tag_ids = song.song_tags.values_list('tag_id', flat=True)
-            if tag_ids:
-                related_songs = related_songs | Song.objects.filter(song_tags__tag_id__in=tag_ids).exclude(id=song.id)
-
-        related_songs = related_songs.distinct().order_by('-count')[:24]
-
+        limit = 24
+        
+        # Get songs from the same artists (highest priority)
+        artist_songs = list(Song.objects.filter(
+            song_artists__artist__in=song.song_artists.values_list('artist', flat=True)
+        ).exclude(id=song.id)[:limit])
+        
+        # Get songs from the same album (next priority)
+        remaining_slots = limit - len(artist_songs)
+        album_songs = list(Song.objects.filter(
+            album=song.album
+        ).exclude(id=song.id).exclude(id__in=[s.id for s in artist_songs])[:remaining_slots])
+        
+        remaining_slots = limit - len(artist_songs) - len(album_songs)
+        tag_songs = list(Song.objects.filter(
+            song_tags__tag__in=song.song_tags.values_list('tag', flat=True)
+        ).exclude(id=song.id).exclude(id__in=[s.id for s in artist_songs + album_songs])
+        .order_by(Random())[:remaining_slots])
+        
+        related_songs = artist_songs + album_songs + tag_songs
+        
         serializer = self.get_serializer(related_songs, many=True)
         return Response(serializer.data)
 
