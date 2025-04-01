@@ -447,7 +447,7 @@ class UserSongHistoryView(APIView):
     def get(self, request):
         paginator = CustomLimitOffsetPagination()
         paginated_history_songs = paginator.paginate_queryset(request.user.song_history.all(), request)
-        serializer = UserLikedSongSerializer(paginated_history_songs, many=True)
+        serializer = UserSongHistorySerializer(paginated_history_songs, many=True)
         return paginator.get_paginated_response(serializer.data)
 
     def delete(self, request):
