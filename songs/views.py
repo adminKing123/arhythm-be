@@ -354,15 +354,15 @@ class LikedSongsSeekerViewSet(viewsets.ModelViewSet):
         paginated_songs = paginator.paginate_queryset(liked_songs, request)
         serializer = UserLikedSongSerializer(paginated_songs, many=True)
         paginated_response = paginator.get_paginated_response(serializer.data)
-        
+        count = liked_songs.count()
         # Add user info similar to playlist info
         paginated_response.data["playlist"] = {
             "id": "liked_songs",
             "name": "Liked Songs",
             "privacy_type": "Private",
-            "songs_count": liked_songs.count(),
-            "thumbnail": "album-images/300x300/SariSani%20-%20Saripodhaa%20Sanivaaram%20%282024%29.png",
-            "contains_song": liked_songs.count() > 0,
+            "songs_count": count,
+            "thumbnail": liked_songs.first().song.album.thumbnail300x300 if count else None,
+            "contains_song": count > 0,
             "author": {
                 "id": user.id,
                 "username": user.username,
