@@ -418,6 +418,37 @@ class LikedSongsSeekerViewSet(viewsets.ModelViewSet):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['post'])
+    def remove_songs(self, request):
+        user = request.user
+        
+        if not user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        songs_id = request.data.get('songs_id')
+        if not songs_id or not isinstance(songs_id, list) or len(songs_id) == 0:
+            return Response(
+                {"error": "songs_id is required and must contain at least one song ID."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Delete the liked songs
+        deleted_count, _ = UserLikedSong.objects.filter(
+            user=user, 
+            song_id__in=songs_id
+        ).delete()
+        
+        if deleted_count == 0:
+            return Response(
+                {"error": "No matching songs found in liked songs."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({
+            "message": f"{deleted_count} songs removed from liked songs successfully.",
+            "playlistDeleted": UserLikedSong.objects.count() == 0
+        }, status=status.HTTP_200_OK)
 
 class PlaylistSeekerViewSet(viewsets.ModelViewSet):
     serializer_class = PlaylistSerializer
