@@ -355,7 +355,10 @@ class LikedSongsSeekerViewSet(viewsets.ModelViewSet):
         serializer = UserLikedSongSerializer(paginated_songs, many=True)
         paginated_response = paginator.get_paginated_response(serializer.data)
         count = liked_songs.count()
-        # Add user info similar to playlist info
+
+        if (count == 0):
+            return Response({"error": "Song not found in playlist."}, status=status.HTTP_404_NOT_FOUND)
+        
         paginated_response.data["playlist"] = {
             "id": "liked_songs",
             "name": "Liked Songs",
