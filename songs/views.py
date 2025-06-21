@@ -293,6 +293,132 @@ class PlaylistViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Songs removed successfully."}, status=status.HTTP_200_OK)
 
+class LikedSongsSeekerViewSet(viewsets.ModelViewSet):
+    serializer_class = UserLikedSongSerializer
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return UserLikedSong.objects.none()
+        return UserLikedSong.objects.filter(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def random(self, request):
+        user = request.user
+        
+        if not user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        liked_songs = user.liked_songs.all()
+        count = liked_songs.count()
+        
+        if count == 0:
+            return Response({"error": "No liked songs found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        index = randint(0, count - 1)
+        liked_song = liked_songs.only('id')[index]
+        song = liked_song.song
+        serializer = UserLikedSongSerializer(liked_song)
+
+        # Update user song history
+        user_song_history, created = UserSongHistory.objects.update_or_create(
+            user=user,
+            song=song,
+            defaults={'accessed_at': now()}
+        )
+        if not created:
+            user_song_history.count += 1
+        else:
+            user_song_history.count = 1
+        user_song_history.save()
+        
+        # Update song count
+        song.count += 1
+        song.save()
+
+        # Add liked status to response (always True for liked songs)
+        if 'song' in serializer.data:
+            serializer.data["song"]["liked"] = True
+            
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def songs(self, request):
+        user = request.user
+        
+        if not user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        liked_songs = user.liked_songs.all()
+        
+        paginator = CustomLimitOffsetPagination()
+        paginated_songs = paginator.paginate_queryset(liked_songs, request)
+        serializer = UserLikedSongSerializer(paginated_songs, many=True)
+        paginated_response = paginator.get_paginated_response(serializer.data)
+        
+        # Add user info similar to playlist info
+        paginated_response.data["playlist"] = {
+            "id": "liked_songs",
+            "name": "Liked Songs",
+            "privacy_type": "Private",
+            "songs_count": liked_songs.count(),
+            "thumbnail": "album-images/300x300/SariSani%20-%20Saripodhaa%20Sanivaaram%20%282024%29.png",
+            "contains_song": liked_songs.count() > 0,
+            "author": {
+                "id": user.id,
+                "username": user.username,
+            }
+        }
+        
+        return paginated_response
+    
+    @action(detail=False, methods=['get'])
+    def seek(self, request):
+        """Efficiently get the next and previous songs in liked songs."""
+        user = request.user
+        
+        if not user.is_authenticated:
+            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        likedsong_id = request.query_params.get('playlistsong_id')
+        loop = request.query_params.get('loop')
+
+        current_likedsong = None
+        next_song = None
+        prev_song = None
+        
+        liked_songs = user.liked_songs.all()
+
+        if likedsong_id:
+            try:
+                current_likedsong = liked_songs.get(id=likedsong_id)
+            except UserLikedSong.DoesNotExist:
+                return Response({"error": "Song not found in liked songs."}, status=status.HTTP_404_NOT_FOUND)
+
+        if current_likedsong:
+            next_song = liked_songs.filter(
+                liked_at__lt=current_likedsong.liked_at
+            ).first()
+            
+            prev_song = liked_songs.filter(
+                liked_at__gt=current_likedsong.liked_at
+            ).last()
+        else:
+            next_song = liked_songs.first()
+
+        if loop:
+            if prev_song is None:
+                prev_song = liked_songs.last()
+            if next_song is None:
+                next_song = liked_songs.first()
+
+        data = {
+            "previous_song": UserLikedSongSerializer(prev_song).data if prev_song else None,
+            "current_song": UserLikedSongSerializer(current_likedsong).data if current_likedsong else None,
+            "next_song": UserLikedSongSerializer(next_song).data if next_song else None
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
 class PlaylistSeekerViewSet(viewsets.ModelViewSet):
     serializer_class = PlaylistSerializer
 
