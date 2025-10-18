@@ -12,13 +12,13 @@ class AlbumAdmin(admin.ModelAdmin):
     form = AlbumAdminForm
 
     list_display = ('title', 'year', 'code')
-    search_fields = ('title', 'code')
+    search_fields = ('title', 'code', 'actors__name')
 
     def get_fields(self, request, obj=None):
         if obj:
-            return ['code', 'title', 'year', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+            return ['code', 'title', 'year', 'thumbnail300x300', 'thumbnail1200x1200', 'actors', 'custom_thumbnailpreview']
         else:
-            return ['code', 'title', 'year', 'image_file']
+            return ['code', 'title', 'year', 'image_file', 'actors']
         
     def get_readonly_fields(self, request, obj):
         if obj:
