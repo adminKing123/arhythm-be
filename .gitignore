@@ -1,0 +1,83 @@
+.venv
+.data-handlers
+config.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+*.env
+db.sqlite3
+media/
+staticfiles/
+*.mo
+
+# Django migrations
+*/migrations/*.py
+*/migrations/*.pyc
+!*/migrations/__init__.py
+
+# Pytest cache
+.pytest_cache/
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+
+# Node / frontend stuff if you have React/Vue in project
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+
+# Coverage reports
+htmlcov/
+.coverage
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+
+# Others
+*.sqlite3-journal
+*.log
+*.pot
+*.pyc
+*.pyo
