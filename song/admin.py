@@ -12,7 +12,7 @@ class SongAdmin(admin.ModelAdmin):
     form = SongAdminForm
 
     list_display = ('original_name', 'album', 'count', 'liked_count', 'duration_formatted')
-    search_fields = ('title', 'original_name', 'album__title', 'artists__name', 'languages__name')
+    search_fields = ('title', 'original_name', 'album__title', 'artists__name', 'album__actors__name', 'languages__name')
     autocomplete_fields = ['album']
 
 
