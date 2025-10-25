@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'song',
     'actor',
     'user',
+    'admin_actions',
 ]
 
 MIDDLEWARE = [
