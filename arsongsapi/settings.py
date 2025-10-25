@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'share',
     'songrequest',
     'accounts',
-    'songs'
+    'songs',
+    'admin_actions',
 ]
 
 MIDDLEWARE = [

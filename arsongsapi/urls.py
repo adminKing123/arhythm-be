@@ -7,4 +7,5 @@ urlpatterns = [
     path('auth/', include('accounts.urls')),  # Include the URLs from the songs app
     path('song-requests/', include('songrequest.urls')),  # Include the URLs from the songs app
     path('share/', include('share.urls')),  # Include the URLs from the songs app
+    path("admin-actions/", include("admin_actions.urls")),
 ]
