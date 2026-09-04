@@ -3,4 +3,5 @@ from .views import DownloadDBView
 
 urlpatterns = [
     path('download-db/', DownloadDBView.as_view(), name='download-db'),
+    path('db-to-json/', DownloadDBView.as_view(), name='download-db'),
 ]

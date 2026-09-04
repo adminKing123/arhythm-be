@@ -81,3 +81,5 @@ docker-compose.override.yml
 *.pot
 *.pyc
 *.pyo
+
+database_export/
